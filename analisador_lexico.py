@@ -36,7 +36,7 @@ reserved_words = {
 
 # Lista de tokens, incluindo as palavras reservadas
 tokens = [
-    'NUMBER',       # Números inteiros
+    'NUMBER',       # Números inteiros, flutuantes e notação científica
     'PLUS',         # +
     'MINUS',        # -
     'TIMES',        # *
@@ -48,7 +48,7 @@ tokens = [
     'SEMICOLON',    # ;
     'COMMA',        # ,
     'ID',           # Identificadores (nomes de variáveis)
-    'ATRIBUITION',  # Atribuição =
+    'ATRIBUITION',  # =
     'EQUALS',       # ==
     'NOT_EQUALS',   # !=
     'LESS_THAN',    # <
@@ -90,6 +90,15 @@ t_INCREMENT      = r'\+\+'
 t_DECREMENT      = r'--'
 t_DOTS           = r':'
 
+# Função para capturar números inteiros, flutuantes e notação científica
+def t_NUMBER(t):
+    r'\d+(\.\d*)?([eE][-+]?\d+)?'
+    if '.' in t.value or 'e' in t.value or 'E' in t.value:
+        t.value = float(t.value)  # Converte para ponto flutuante se for decimal ou notação científica
+    else:
+        t.value = int(t.value)    # Caso contrário, é um número inteiro
+    return t
+
 # Função para capturar quebra de linha \n
 def t_BREAKLINE(t):
     r'\n'
@@ -107,12 +116,6 @@ def t_ID(t):
     t.type = reserved_words.get(t.value, 'ID')  # Verifica se é uma palavra reservada
     return t
 
-# Expressão regular para um número (NUMBER)
-def t_NUMBER(t):
-    r'\d+'
-    t.value = int(t.value)  # Converte o número para inteiro
-    return t
-
 # Ignorar espaços em branco e tabulações
 t_ignore = ' \t'
 
@@ -124,6 +127,10 @@ def t_error(t):
 # Criação do analisador léxico
 lexer = lex.lex()
 
+# Função para imprimir tokens no formato desejado
+def print_token(tok):
+    print(f"LexToken({tok.type}, '{tok.value}', {tok.lineno})")
+
 # Função para ler o arquivo e analisar o código
 def analyze_file(filename):
     with open(filename, 'r') as file:
@@ -133,7 +140,7 @@ def analyze_file(filename):
         tok = lexer.token()
         if not tok:
             break
-        print(tok)
+        print_token(tok)
 
 # Analisando o arquivo de entrada
 analyze_file('./exemplo1.sp')
